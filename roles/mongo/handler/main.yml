@@ -1,0 +1,3 @@
+handlers:
+  - name: mongod
+    service: name=mongod state=restarted

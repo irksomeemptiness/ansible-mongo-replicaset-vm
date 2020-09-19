@@ -1,0 +1,10 @@
+---
+packages:
+  - python-pip
+  - ufw
+  - python-setuptools
+  - mongodb-org
+  - awscli
+
+pip:
+  - pymongo

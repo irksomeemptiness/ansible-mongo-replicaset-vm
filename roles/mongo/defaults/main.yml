@@ -1,0 +1,7 @@
+---
+rs_name: rs0
+db_port: 27017
+
+
+#db_admin_name: admin
+#db_admin_pass: 45100

@@ -1,0 +1,125 @@
+---
+- name: Create a directory for a DB files if it does not exist
+  file:
+    path: /opt/mongodb
+    state: directory
+    mode: '0755'
+    owner: mongodb
+    group: mongodb
+
+- name: copy config file
+  template:
+    src: mongodb.j2
+    dest: /etc/mongod.conf
+    mode: '0644'
+
+
+- name: Create a directory for key
+  file:
+    path: /opt/mongokey
+    state: directory
+    mode: '0755'
+    owner: mongodb
+    group: mongodb
+
+
+- name: copy key file
+  template:
+    src: key.key
+    dest: /opt/mongokey/key.key
+    owner: mongodb
+    group: mongodb
+    mode: '0400'
+
+
+#- name: copy tls crt file
+#  template:
+#    src: mongo.pem
+#    dest: /opt/mongokey/mongo.pem
+#    owner: mongodb
+#    group: mongodb
+#    mode: '0400'
+
+- name: Disable NUMA nodes
+  sysctl:
+    name: vm.zone_reclaim_mode
+    value: '0'
+    sysctl_set: yes
+    state: present
+
+- name: Increase network interface backlog
+  sysctl:
+    name: net.core.netdev_max_backlog
+    value: '10000'
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+#- name: Add IP address of all hosts to all hosts
+#  lineinfile:
+#    dest: /etc/hosts
+#    line: "{{ hostvars[item].ansible_host }} {{ hostvars[item].inventory_hostname }}"
+#    state: present
+#  with_items: "{{ groups['mongo'] }}"
+
+- name: Add IP address of all hosts to all hosts
+  lineinfile:
+    dest: /etc/hosts
+    line: "{{ hostvars[item].internal_ip }} {{ hostvars[item].inventory_hostname }}"
+    state: present
+  with_items: "{{ groups['mongo'] }}"
+
+- name: enable and start service mongodb
+  systemd:
+    name: mongod
+    enabled: yes
+    masked: no
+    state: started
+
+- name: sleep 2 sec
+  wait_for:
+    timeout: 2
+
+#- name: create admin user
+#  mongodb_user:
+#    database: admin
+#    name: "{{ db_admin_name }}"
+#    password: "{{ db_admin_pass }}"
+#    roles: userAdminAnyDatabase
+#    state: present
+#  when: "'node1' in inventory_hostname"
+
+#- name: Ensure replicaset rs0 exists
+#  mongodb_replicaset:
+#    login_host: node1
+#    #login_user: "{{ db_admin_name }}"
+#    #login_password: "{{ db_admin_pass }}"
+#    replica_set: rs0
+#    members:
+#    - node1:27017
+#    - node2:27017
+#    - node3:27017
+#  when: "'node1' in inventory_hostname"
+#  notify: mongod
+
+#- name: create admin user
+#  mongodb_user:
+#    database: admin
+#    name: "{{ db_admin_name }}"
+#    password: "{{ db_admin_pass }}"
+#    roles: userAdminAnyDatabase
+#    state: present
+
+#- name: create cluster admin
+#  mongodb_user:
+#    database: admin
+#    name: "{{ db_admin_name }}"
+#    password: "{{ db_admin_pass }}"
+#    roles: clusterAdmin
+#    state: present
+
+
+- name: restart mongodb
+  systemd:
+    name: mongod
+    state: restarted

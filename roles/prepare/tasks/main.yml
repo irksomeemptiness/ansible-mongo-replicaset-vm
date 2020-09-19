@@ -1,0 +1,48 @@
+---
+- name: Install gnubg package
+  apt:
+    name: gnupg
+    update_cache: yes
+
+- name: Add an Apt signing key
+  apt_key:
+    url: https://www.mongodb.org/static/pgp/server-4.2.asc
+    state: present
+
+- name: add mongodb repository
+  apt_repository:
+    repo: deb https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.2 multiverse
+    state: present
+    filename: mongodb-4.2.list
+
+- name: Install list packages and mongodb
+  apt:
+    name: '{{ packages }}'
+
+- name: pip install libs
+  pip:
+    name: '{{ pip }}'
+
+- name: Remove swapfile from /etc/fstab
+  mount:
+    name: swap
+    fstype: swap
+    state: absent
+
+- name: Disable swap
+  command: swapoff -a
+  when: ansible_swaptotal_mb > 0
+
+- name: Allow ssh connects
+  ufw:
+    rule: allow
+    port: ssh
+    proto: tcp
+
+- name: enable UFW
+  ufw:
+    state: enabled
+
+- name: enable UFW
+  ufw:
+    state: reloaded

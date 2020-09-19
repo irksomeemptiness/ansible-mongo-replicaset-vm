@@ -1,0 +1,19 @@
+---
+- name: Allow ssh connects
+  ufw:
+    rule: allow
+    port: ssh
+    proto: tcp
+
+- name: Allow access from hosts
+  ufw:
+    rule: allow
+    src: '{{ item }}'
+    port: '27017'
+  loop: "{{ host }}"
+  notify:
+  - reload
+
+#- name: reload UFW
+#  ufw:
+#    state: reloaded

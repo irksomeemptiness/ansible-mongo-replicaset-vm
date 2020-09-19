@@ -1,0 +1,8 @@
+---
+- name: Prepare VM and install mongo
+  hosts: mongo
+  become_user: root
+  become: yes
+  roles:
+  - prepare
+  - mongo
